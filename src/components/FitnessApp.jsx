@@ -10,6 +10,7 @@ import LoginComponent from "./LoginComponent";
 import AuthProvider, {useAuth} from './security/AuthContex.js'
 import RationComponent from "./RationComponent";
 import MyProfileComponent from "./MyProfileComponent";
+import RegisterComponent from "./RegisterComponent";
 
 function AuthenticatedRoute({children}){
     const authContext = useAuth()
@@ -27,6 +28,7 @@ const FitnessApp = () => {
                     <Routes>
                         <Route path='/' element={<LoginComponent/>}/>
                         <Route path='/login' element={<LoginComponent/>}/>
+                        <Route path='/register' element={<RegisterComponent/>}/>
                         <Route path='/welcome/:username' element={
                             <AuthenticatedRoute>
                                 <WelcomeComponent/>
