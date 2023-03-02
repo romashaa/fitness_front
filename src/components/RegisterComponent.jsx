@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {Form, Row} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import {useNavigate} from "react-router-dom";
-import {useAuth} from "./security/AuthContex";
 
 const RegisterComponent = () => {
     const[username, setUsername] =useState('')
@@ -12,7 +11,6 @@ const RegisterComponent = () => {
     const[birthYear, setBirthYear] =useState('')
     const[showErrorMessage, setShowErrorMessage] =useState(false)
     const navigate = useNavigate()
-    const authContext = useAuth()
     function handleUsernameChange(event){
         setUsername(event.target.value)
     }
@@ -29,11 +27,7 @@ const RegisterComponent = () => {
         setBirthYear(event.target.value)
     }
     function handleSubmit(){
-        if(authContext.login(username, password)){
-            navigate(`/welcome/${username}`)
-        }else {
-            setShowErrorMessage(true)
-        }
+        navigate(`/welcome/${username}`)
     }
     return (
         <div>

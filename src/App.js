@@ -1,17 +1,53 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
+import React, {Component, useEffect} from 'react';
 import './App.css';
-import Counter from "./components/counter/Counter";
-import ClassCounter from "./components/counter/ClassCounter";
-import FitnessApp from "./components/FitnessApp";
+import './components/FitnessApp.css'
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+import HeaderComponent from "./components/HeaderComponent";
+import LoginComponent from "./components/LoginComponent";
+import RegisterComponent from "./components/RegisterComponent";
+import PrivateRoute from "./PrivateRoute";
+import WelcomeComponent from "./components/WelcomeComponent";
+import MyProfileComponent from "./components/MyProfileComponent";
+import RationComponent from "./components/RationComponent";
+import LogoutComponent from "./components/LogoutComponent";
+import ErrorComponent from "./components/ErrorComponent";
+import FooterComponent from "./components/FooterComponent";
+import {useLocalState} from "./util/useLocalStorage";
 
-class App extends Component {
-    render() {
-        return (
-            <div className="App">
-              <FitnessApp/>
-            </div>
-        );
-    }
+const App = () => {
+    return (
+        <div className="App">
+            <BrowserRouter>
+                <HeaderComponent/>
+                <Routes>
+                    <Route path='/' element={<LoginComponent/>}/>
+                    <Route path='/login' element={<LoginComponent/>}/>
+                    <Route path='/register' element={<RegisterComponent/>}/>
+                    <Route path='/welcome/:username' element={
+                        <PrivateRoute>
+                            <WelcomeComponent/>
+                        </PrivateRoute>
+                    }/>
+                    <Route path='/myProfile/:username' element={
+                        <PrivateRoute>
+                            <MyProfileComponent/>
+                        </PrivateRoute>
+                    }/>
+                    <Route path='/ration' element={
+                        <PrivateRoute>
+                            <RationComponent/>
+                        </PrivateRoute>
+                    }/>
+                    <Route path='/logout' element={
+                        <PrivateRoute>
+                            <LogoutComponent/>
+                        </PrivateRoute>
+                    }/>
+                    <Route path='*' element={<ErrorComponent/>}/>
+                </Routes>
+                <FooterComponent/>
+            </BrowserRouter>
+        </div>
+    );
 }
 export default App;

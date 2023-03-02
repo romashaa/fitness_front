@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useAuth} from "./security/AuthContex";
 import {Form, Row} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import {useLocalState} from "../util/useLocalStorage";
@@ -10,36 +9,7 @@ const LoginComponent = () => {
     const [password, setPassword] = useState('')
     const [showErrorMessage, setShowErrorMessage] = useState(false)
     const navigate = useNavigate()
-    const authContext = useAuth()
-
     const [jwt, setJwt] = useLocalState("","jwt")
-
-    // useEffect(()=>{
-    //     if(!jwt){
-    //         const reqBody={
-    //             "username":"masha",
-    //             "password":"asdfasdf"
-    //         }
-    //         fetch('api/auth/login',{
-    //             headers:{
-    //                 "Content-type":"application/json"
-    //             },
-    //             method:"post",
-    //             body:JSON.stringify(reqBody)
-    //         })
-    //             .then((response) => Promise.all([response.json(),response.headers]))
-    //             .then(([body,headers]) =>{
-    //                 setJwt(headers.get("authorization"));
-    //                 console.log(jwt);
-    //             });
-    //     }
-    // },[])
-    //
-    // useEffect(()=>{
-    //     console.log(`JWT is ${jwt}`)
-    // },[jwt])
-
-
 
     function handleUsernameChange(event) {
         setUsername(event.target.value)
@@ -48,12 +18,37 @@ const LoginComponent = () => {
     function handlePasswordChange(event) {
         setPassword(event.target.value)
     }
-    function handleSubmit() {
-        if (authContext.login(username, password)) {
-            navigate(`/welcome/${username}`)
-        } else {
-            setShowErrorMessage(true)
+    function handleSubmit(event) {
+        event.preventDefault();
+
+        const reqBody={
+            username: username,
+            password: password,
         }
+
+        fetch('api/auth/login',{
+            headers:{
+                "Content-type":"application/json"
+            },
+            method:"post",
+            body:JSON.stringify(reqBody)
+        })
+            .then((response) => {
+                if(response.status===200)
+                    return Promise.all([response.json(), response.headers]);
+                else return Promise.reject("Invalid login attempt")
+            })
+            .then(([body,headers]) =>{
+               // setJwt(headers.get("authorization"));
+                 const authValue = headers.get("authorization");
+                 localStorage.setItem("jwt", JSON.stringify(authValue));
+                navigate("/ration")
+            }).catch((message)=> {
+               alert(message)
+               console.log(message)
+
+        });
+        //navigate(`/welcome/${username}`)
     }
 
     return (

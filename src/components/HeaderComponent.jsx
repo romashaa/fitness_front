@@ -1,14 +1,7 @@
 import {Link} from "react-router-dom";
 import React, {useContext} from "react";
-import {useAuth} from "./security/AuthContex";
 
 const HeaderComponent = () => {
-
-    const authContext = useAuth()
-    const isAuthenticated = authContext.isAuthenticated
-    function logout(){
-        authContext.logout()
-    }
     return (
         <header className='header'>
             <div className="container">
@@ -18,22 +11,22 @@ const HeaderComponent = () => {
                         <div className="collapse navbar-collapse">
                             <ul className="navbar-nav">
                                 <li className="nav-item fs-5">
-                                    {isAuthenticated && <Link className="nav-link" to="/myProfile/masha">Мій профіль</Link>}
+                                    <Link className="nav-link" to="/myProfile/masha">Мій профіль</Link>
                                 </li>
                                 <li className="nav-item fs-5">
-                                    {isAuthenticated && <Link className="nav-link" to="/ration">Раціон</Link>}
+                                   <Link className="nav-link" to="/ration">Раціон</Link>
                                 </li>
                             </ul>
                         </div>
                         <ul className="navbar-nav">
                             <li className="nav-item fs-5">
-                                {!isAuthenticated && <Link className="nav-link" to="/login">Login</Link>}
+                                <Link className="nav-link" to="/login">Login</Link>
                             </li>
                             <li className="nav-item fs-5">
-                                {!isAuthenticated && <Link className="nav-link" to="/register">Register</Link>}
+                                <Link className="nav-link" to="/register">Register</Link>
                             </li>
                             <li className="nav-item fs-5">
-                                {isAuthenticated && <Link className="nav-link" to="/logout" onClick={logout}>Logout</Link>}
+                                <Link className="nav-link" to="/logout">Logout</Link>
                             </li>
                         </ul>
                     </nav>
