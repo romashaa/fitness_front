@@ -1,8 +1,11 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {Form, Row} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import {useLocalState} from "../util/useLocalStorage";
+import jwt_decode from "jwt-decode";
+import {Context} from "../context/MenuContext";
+
 
 const LoginComponent = () => {
     const [username, setUsername] = useState('')
@@ -10,6 +13,8 @@ const LoginComponent = () => {
     const [showErrorMessage, setShowErrorMessage] = useState(false)
     const navigate = useNavigate()
     const [jwt, setJwt] = useLocalState("","jwt")
+
+    const {user} = useContext(Context);
 
     function handleUsernameChange(event) {
         setUsername(event.target.value)
@@ -25,6 +30,7 @@ const LoginComponent = () => {
             username: username,
             password: password,
         }
+
 
         fetch('api/auth/login',{
             headers:{
@@ -42,7 +48,8 @@ const LoginComponent = () => {
                // setJwt(headers.get("authorization"));
                  const authValue = headers.get("authorization");
                  localStorage.setItem("jwt", JSON.stringify(authValue));
-                navigate("/ration")
+                 // user.setUser(jwt_decode(authValue))
+                 navigate(`/myProfile/${username}`)
             }).catch((message)=> {
                alert(message)
                console.log(message)

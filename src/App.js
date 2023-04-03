@@ -1,4 +1,4 @@
-import React, {Component, useEffect} from 'react';
+import React, {Component, useContext, useEffect} from 'react';
 import './App.css';
 import './components/FitnessApp.css'
 import {BrowserRouter, Route, Routes} from "react-router-dom";
@@ -13,40 +13,50 @@ import LogoutComponent from "./components/LogoutComponent";
 import ErrorComponent from "./components/ErrorComponent";
 import FooterComponent from "./components/FooterComponent";
 import {useLocalState} from "./util/useLocalStorage";
+import {ProSidebarProvider} from "react-pro-sidebar";
+import {Context, ContextProvider} from "./context/MenuContext";
+import SidebarComponent from "./components/littleComponents/SidebarComponent";
+import jwt_decode from "jwt-decode";
 
 const App = () => {
+    // const {user} = useContext(Context);
+    // user.setUser(jwt_decode(localStorage.getItem("jwt")))
     return (
         <div className="App">
-            <BrowserRouter>
-                <HeaderComponent/>
-                <Routes>
-                    <Route path='/' element={<LoginComponent/>}/>
-                    <Route path='/login' element={<LoginComponent/>}/>
-                    <Route path='/register' element={<RegisterComponent/>}/>
-                    <Route path='/welcome/:username' element={
-                        <PrivateRoute>
-                            <WelcomeComponent/>
-                        </PrivateRoute>
-                    }/>
-                    <Route path='/myProfile/:username' element={
-                        <PrivateRoute>
-                            <MyProfileComponent/>
-                        </PrivateRoute>
-                    }/>
-                    <Route path='/ration' element={
-                        <PrivateRoute>
-                            <RationComponent/>
-                        </PrivateRoute>
-                    }/>
-                    <Route path='/logout' element={
-                        <PrivateRoute>
-                            <LogoutComponent/>
-                        </PrivateRoute>
-                    }/>
-                    <Route path='*' element={<ErrorComponent/>}/>
-                </Routes>
-                <FooterComponent/>
-            </BrowserRouter>
+            <ContextProvider>
+                <BrowserRouter>
+                    <ProSidebarProvider>
+                    <HeaderComponent/>
+                    <Routes>
+                        <Route path='/' element={<LoginComponent/>}/>
+                        <Route path='/login' element={<LoginComponent/>}/>
+                        <Route path='/register' element={<RegisterComponent/>}/>
+                        <Route path='/welcome/:username' element={
+                            <PrivateRoute>
+                                <WelcomeComponent/>
+                            </PrivateRoute>
+                        }/>
+                        <Route path='/myProfile/:username' element={
+                            <PrivateRoute>
+                                <MyProfileComponent/>
+                            </PrivateRoute>
+                        }/>
+                        <Route path='/ration' element={
+                            <PrivateRoute>
+                                <RationComponent/>
+                            </PrivateRoute>
+                        }/>
+                        <Route path='/logout' element={
+                            <PrivateRoute>
+                                <LogoutComponent/>
+                            </PrivateRoute>
+                        }/>
+                        <Route path='*' element={<ErrorComponent/>}/>
+                    </Routes>
+                    {/*<FooterComponent/>*/}
+                        </ProSidebarProvider>
+                </BrowserRouter>
+            </ContextProvider>
         </div>
     );
 }

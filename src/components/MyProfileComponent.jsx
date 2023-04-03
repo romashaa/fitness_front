@@ -1,28 +1,171 @@
-import React from 'react';
-import {Accordion, Card, ListGroup} from "react-bootstrap";
+import React, {useContext, useEffect, useState} from 'react';
+import {Accordion, Card, InputGroup, ListGroup, Modal, FormCheck, Form} from "react-bootstrap";
+import avatar from '../img/avatar.png'
+import Button from "react-bootstrap/Button";
+import axios from "axios";
+import {Context} from "../context/MenuContext";
+import jwt_decode from "jwt-decode";
+import {logDOM} from "@testing-library/react";
 
 const MyProfileComponent = () => {
+    const [age, setAge] = useState()
+    const [gender, setGender]=useState("FEMALE")
+    const [aim, setAim]=useState("")
+    const [height, setHeight] = useState()
+    const [weight, setWeight]=useState()
+    const [show, setShow] = useState(false);
+    let user = jwt_decode(localStorage.getItem("jwt")).sub;
+    const [data, setData] = useState({});
+
+    useEffect(() => {
+        axios.get(`api/auth/user/${user}`)
+            .then(response => {
+                setData(response.data);
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }, []);
+
+
+
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+    function handleGenderChange(event) {
+        setGender(event.target.value)
+    }
+    function handleAimChange(event) {
+        setAim(event.target.value)
+    }
+    function handleAgeChange(event) {
+        setAge(event.target.value)
+    }
+    function handleHeightChange(event) {
+        setHeight(event.target.value)
+    }
+
+    function handleWeightChange(event) {
+        setWeight(event.target.value)
+    }
+
+
+
+    function updateUser(){
+        const reqBody = {
+            age: age,
+            gender: gender,
+            goal: aim,
+            height: height,
+            weight: weight
+        }
+        fetch(`api/auth/user/${user}`,{
+            headers:{
+                "Content-type":"application/json"
+            },
+            method:"put",
+            body:JSON.stringify(reqBody)
+        }).then(r => alert("updated"));
+
+    }
+
+
+
     return (
         <div>
-            <Card style={{ width: '18rem' }}>
-                <Card.Img variant="top" src="holder.js/100px180?text=Image cap" />
-                <Card.Body>
-                    <Card.Title>Card Title</Card.Title>
-                    <Card.Text>
-                        Some quick example text to build on the card title and make up the
-                        bulk of the card's content.
-                    </Card.Text>
-                </Card.Body>
-                <ListGroup className="list-group-flush">
-                    <ListGroup.Item>Cras justo odio</ListGroup.Item>
-                    <ListGroup.Item>Dapibus ac facilisis in</ListGroup.Item>
-                    <ListGroup.Item>Vestibulum at eros</ListGroup.Item>
-                </ListGroup>
-                <Card.Body>
-                    <Card.Link href="#">Card Link</Card.Link>
-                    <Card.Link href="#">Another Link</Card.Link>
-                </Card.Body>
-            </Card>
+            <Modal show={show} onHide={handleClose} style={{backgroundColor: "rgba(0, 0, 0, 0)", height:'100%'}}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Modal heading</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group>
+                            <Form.Label className="ml-0">Age</Form.Label>
+                            <Form.Control type="email" placeholder="Enter age" value={age}
+                                          onChange={handleAgeChange}/>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Gender</Form.Label>
+                            <Form.Check
+                                inline
+                                label="Чоловіча"
+                                name="group1"
+                                type="radio"
+                                id="male"
+                                value="MALE"
+                                checked={gender === 'MALE'}
+                                onChange={handleGenderChange}
+                            />
+                            <Form.Check
+                                inline
+                                label="Жіноча"
+                                name="group1"
+                                type="radio"
+                                id="female"
+                                value="FEMALE"
+                                checked={gender === 'FEMALE'}
+                                onChange={handleGenderChange}
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Goal</Form.Label>
+                            <Form.Select aria-label="Оберіть ціль" value={aim} onChange={handleAimChange}>
+                                <option value="STAYINFORM">Залишатися в формі</option>
+                                <option value="LOSEWEIGHT">Схуднути</option>
+                                <option value="BIGMUSCLES">Набрати м'язову масу</option>
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Height</Form.Label>
+                            <Form.Control type="text" placeholder="Enter height" value={height}
+                                          onChange={handleHeightChange}/>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Weight</Form.Label>
+                            <Form.Control type="text" placeholder="Enter weight" value={weight}
+                                          onChange={handleWeightChange}/>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={updateUser}>
+                        Save Changes
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            <div>
+                <div className="row">
+                    <Card className="row m-auto col-md-4">
+                        <Card.Img className="m-auto" style={{width:"18rem"}} variant="top" src={avatar}/>
+                        <Card.Body>
+                            <Card.Title>{user}</Card.Title>
+                        </Card.Body>
+                        <ListGroup className="list-group-flush">
+                            {data.gender ==="MALE"? <ListGroup.Item>Стать :  Чоловіча </ListGroup.Item>
+                                : <ListGroup.Item>Стать : Жіноча </ListGroup.Item>}
+                            <ListGroup.Item>Вік: {data.age}</ListGroup.Item>
+                            <ListGroup.Item>Зріст: {data.height}</ListGroup.Item>
+                            <ListGroup.Item>Вага: {data.weight}</ListGroup.Item>
+                            {data.goal==="BIGMUSCLES" ? <ListGroup.Item>Ціль: Набрати м'язову масу</ListGroup.Item> :
+                                data.goal==="LOSEWEIGHT" ? <ListGroup.Item>Ціль: Схуднути</ListGroup.Item> :
+                                    <ListGroup.Item>Ціль: Залишатися в формі</ListGroup.Item>}
+
+
+                        </ListGroup>
+                        <Card.Body>
+                            <Button variant="primary" onClick={handleShow}>
+                                Редагувати
+                            </Button>
+                        </Card.Body>
+                    </Card>
+
+
+                </div>
+            </div>
         </div>
     );
 };
