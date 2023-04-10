@@ -140,3 +140,18 @@ card{
     color: gray;
     cursor: pointer;
 }
+.dishSuggestion{
+    display:block;
+    margin-left:45px;
+    cursor: pointer;
+    border-right: 1px solid black;
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+}
+.dishSuggestion:hover{
+    background-color: darkseagreen;
+}
+.dishInput{
+    display:inline-block;
+    width: 85%;
+}
