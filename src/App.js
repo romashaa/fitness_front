@@ -14,7 +14,7 @@ import ErrorComponent from "./components/ErrorComponent";
 import FooterComponent from "./components/FooterComponent";
 import {useLocalState} from "./util/useLocalStorage";
 import {ProSidebarProvider} from "react-pro-sidebar";
-import {Context, ContextProvider} from "./context/MenuContext";
+import {Context, ContextProvider} from "./context/UserContext";
 import SidebarComponent from "./components/littleComponents/SidebarComponent";
 import jwt_decode from "jwt-decode";
 
@@ -22,10 +22,10 @@ const App = () => {
     // const {user} = useContext(Context);
     // user.setUser(jwt_decode(localStorage.getItem("jwt")))
     return (
+        <ContextProvider>
         <div className="App">
-            <ContextProvider>
+
                 <BrowserRouter>
-                    <ProSidebarProvider>
                     <HeaderComponent/>
                     <Routes>
                         <Route path='/' element={<LoginComponent/>}/>
@@ -53,11 +53,9 @@ const App = () => {
                         }/>
                         <Route path='*' element={<ErrorComponent/>}/>
                     </Routes>
-                    {/*<FooterComponent/>*/}
-                        </ProSidebarProvider>
                 </BrowserRouter>
-            </ContextProvider>
         </div>
+        </ContextProvider>
     );
 }
 export default App;

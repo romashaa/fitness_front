@@ -3,7 +3,7 @@ import {Accordion, Card, InputGroup, ListGroup, Modal, FormCheck, Form} from "re
 import avatar from '../img/avatar.png'
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import {Context} from "../context/MenuContext";
+import {UserContext} from "../context/UserContext";
 import jwt_decode from "jwt-decode";
 import {logDOM} from "@testing-library/react";
 
@@ -14,24 +14,39 @@ const MyProfileComponent = () => {
     const [height, setHeight] = useState()
     const [weight, setWeight]=useState()
     const [show, setShow] = useState(false);
-    let user = jwt_decode(localStorage.getItem("jwt")).sub;
-    const [data, setData] = useState({});
+    // let user = jwt_decode(localStorage.getItem("jwt")).sub;
+    const {currentUser, setCurrentUser} = useContext(UserContext)
+    const [userData, setUserData] = useState({});
 
     useEffect(() => {
-        axios.get(`api/auth/user/${user}`)
-            .then(response => {
-                setData(response.data);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }, []);
+        const storedUser = localStorage.getItem("currentUser");
+        if (storedUser) {
+            setCurrentUser(storedUser);
+        }
+        console.log(storedUser)
+        if(currentUser) {
+            axios.get(`api/auth/user/${currentUser}`)
+                .then(response => {
+                    setUserData(response.data);
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        }
+    }, [currentUser]);
 
 
 
 
     const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    const handleShow = () => {
+        setGender(userData.gender)
+        setWeight(userData.weight)
+        setHeight(userData.height)
+        setAge(userData.age)
+        setAim(userData.goal)
+        setShow(true);
+    }
 
     function handleGenderChange(event) {
         setGender(event.target.value)
@@ -53,6 +68,7 @@ const MyProfileComponent = () => {
 
 
     function updateUser(){
+        setShow(false)
         const reqBody = {
             age: age,
             gender: gender,
@@ -60,7 +76,7 @@ const MyProfileComponent = () => {
             height: height,
             weight: weight
         }
-        fetch(`api/auth/user/${user}`,{
+        fetch(`api/auth/user/${currentUser}`,{
             headers:{
                 "Content-type":"application/json"
             },
@@ -130,10 +146,10 @@ const MyProfileComponent = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
-                        Close
+                        Закрити
                     </Button>
                     <Button variant="primary" onClick={updateUser}>
-                        Save Changes
+                        Зберегти
                     </Button>
                 </Modal.Footer>
             </Modal>
@@ -142,16 +158,16 @@ const MyProfileComponent = () => {
                     <Card className="row m-auto col-md-4">
                         <Card.Img className="m-auto" style={{width:"18rem"}} variant="top" src={avatar}/>
                         <Card.Body>
-                            <Card.Title>{user}</Card.Title>
+                            <Card.Title>{currentUser}</Card.Title>
                         </Card.Body>
                         <ListGroup className="list-group-flush">
-                            {data.gender ==="MALE"? <ListGroup.Item>Стать :  Чоловіча </ListGroup.Item>
+                            {userData.gender ==="MALE"? <ListGroup.Item>Стать :  Чоловіча </ListGroup.Item>
                                 : <ListGroup.Item>Стать : Жіноча </ListGroup.Item>}
-                            <ListGroup.Item>Вік: {data.age}</ListGroup.Item>
-                            <ListGroup.Item>Зріст: {data.height}</ListGroup.Item>
-                            <ListGroup.Item>Вага: {data.weight}</ListGroup.Item>
-                            {data.goal==="BIGMUSCLES" ? <ListGroup.Item>Ціль: Набрати м'язову масу</ListGroup.Item> :
-                                data.goal==="LOSEWEIGHT" ? <ListGroup.Item>Ціль: Схуднути</ListGroup.Item> :
+                            <ListGroup.Item>Вік: {userData.age}</ListGroup.Item>
+                            <ListGroup.Item>Зріст: {userData.height}</ListGroup.Item>
+                            <ListGroup.Item>Вага: {userData.weight}</ListGroup.Item>
+                            {userData.goal==="BIGMUSCLES" ? <ListGroup.Item>Ціль: Набрати м'язову масу</ListGroup.Item> :
+                                userData.goal==="LOSEWEIGHT" ? <ListGroup.Item>Ціль: Схуднути</ListGroup.Item> :
                                     <ListGroup.Item>Ціль: Залишатися в формі</ListGroup.Item>}
 
 

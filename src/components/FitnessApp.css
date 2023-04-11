@@ -155,3 +155,14 @@ card{
     display:inline-block;
     width: 85%;
 }
+.headerBrand{
+    margin-left: 5%;
+    font-weight: bold;
+}
+.headerMenuItem{
+    margin-right: 20px;
+    height: 40px;
+}
+.header{
+    background-color: palevioletred;
+}

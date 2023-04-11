@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import Counter from "./counter/Counter";
 import Calendar from "react-calendar";
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
