@@ -1,5 +1,4 @@
-import React, {useEffect, useState} from 'react';
-import Calendar from "react-calendar";
+import React, {useContext, useEffect, useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import breakfast from '../img/breakfast.jpg'
@@ -13,24 +12,52 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faSearch} from '@fortawesome/free-solid-svg-icons'
 import InputGroup from 'react-bootstrap/InputGroup';
 import axios from "axios";
+import Calendar from "react-calendar";
+import 'react-calendar/dist/Calendar.css';
+import {UserContext} from "../context/UserContext";
+import {logDOM} from "@testing-library/react";
 
 const RationComponent = () => {
     const [open, setOpen] = React.useState(true);
     const [show, setShow] = useState(false);
-    const [value, onChange] = useState('10:00');
+    const [time, setTime] = useState('10:00');
     const [grams, setGrams] = useState('')
+    const [mealType, setMealType] = useState("")
     const [dishOptions, setDishOptions] = useState([])
     const [dishName, setDishName] = useState("")
     const [currentDish, setCurrentDish] = useState({})
     const [suggestions, setSuggestions] = useState([])
+    const [date, setDate] = useState(new Date());
+    const {currentUser, setCurrentUser} = useContext(UserContext)
 
     const handleGramsChange = (event) => {
         const inputValue = event.target.value.slice(0, 4); // limit input to 4 characters
         setGrams(inputValue);
     }
+    const pickDate = (date) => {
+      setDate(date)
+        console.log(date)
+        console.log(currentUser)
+    }
 
-    const addDish = () => {
+    const addMeal = () => {
+        const mealData = {
+            mealType:mealType,
+            date:date,
+            time:time,
+            grams:grams,
+            dishName:dishName
+        };
 
+        axios.post(`/api/auth/meals/addMeal/${currentUser}`, mealData)
+            .then(response => {
+                console.log('New meal added:', response.data);
+                // Add the new meal to the list of meals in your component state
+            })
+            .catch(error => {
+                console.error('Error adding new meal:', error);
+                // Handle the error
+            });
     }
     useEffect(() => {
         const loadDishes = async () => {
@@ -56,56 +83,52 @@ const RationComponent = () => {
                 return dishname.match(regex)
             })
         }
-        console.log(matches)
+      //  console.log(matches)
         setSuggestions(matches)
         setDishName(dishName)
-    }
-
-
-    function addBreakfast() {
-
-    }
-
-    function addSnack() {
-
-    }
-
-    function addDinner() {
-
-    }
-
-    function addSupper() {
-
     }
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
+
     return (
-        <div>
-            <div className="col-md-5 col-sm-8 m-auto menuList">
-                <ListGroup as="ul">
-                    <ListGroup.Item as="li" variant="flush">
-                        Сніданок<FaPlus className="menuItemBtn" onClick={handleShow}/>
-                        <div>
-                            <ListGroup as="ul" variant="flush" className="menuListItem">
-                                <ListGroup.Item as="li">
-                                    Cras justo odio
-                                </ListGroup.Item>
-                                <ListGroup.Item as="li">Dapibus ac facilisis in</ListGroup.Item>
-                                <ListGroup.Item as="li">
-                                    Morbi leo risus
-                                </ListGroup.Item>
-                                <ListGroup.Item as="li">Porta ac consectetur ac</ListGroup.Item>
-                            </ListGroup>
-                        </div>
-                    </ListGroup.Item>
-                    <ListGroup.Item as="li" variant="flush">Обід <FaPlus className="menuItemBtn"
-                                                                         onClick={addDinner}/></ListGroup.Item>
-                    <ListGroup.Item as="li" variant="flush">Вечеря <FaPlus className="menuItemBtn" onClick={addSupper}/></ListGroup.Item>
-                    <ListGroup.Item as="li" variant="flush">Перекус <FaPlus className="menuItemBtn" onClick={addSnack}/></ListGroup.Item>
-                </ListGroup>
+        <div className="rationPage">
+            <div className="rationHeader">
+                <h1>Мої прийоми їжі</h1>
             </div>
+            <div className="panel-container">
+                <div className="left-panel">
+                    <h2>Додати прийом їжі<FaPlus className="menuItemBtn" onClick={handleShow}/></h2>
+                    <div className="col-md-7 col-sm-8 m-auto menuList">
+                        <ListGroup as="ul">
+                            <ListGroup.Item as="li" variant="flush">
+                                Сніданок
+                                <div>
+                                    <ListGroup as="ul" variant="flush" className="menuListItem">
+                                        <ListGroup.Item as="li">
+                                            Cras justo odio
+                                        </ListGroup.Item>
+                                        <ListGroup.Item as="li">Dapibus ac facilisis in</ListGroup.Item>
+                                        <ListGroup.Item as="li">
+                                            Morbi leo risus
+                                        </ListGroup.Item>
+                                        <ListGroup.Item as="li">Porta ac consectetur ac</ListGroup.Item>
+                                    </ListGroup>
+                                </div>
+                            </ListGroup.Item>
+                            <ListGroup.Item as="li" variant="flush">Обід</ListGroup.Item>
+                            <ListGroup.Item as="li" variant="flush">Вечеря</ListGroup.Item>
+                            <ListGroup.Item as="li" variant="flush">Перекус</ListGroup.Item>
+                        </ListGroup>
+                    </div>
+                </div>
+                <div className="right-panel">
+                    <Calendar onChange={pickDate} value={date}/>
+                </div>
+            </div>
+
+
 
             <Modal show={show} onHide={handleClose} style={{backgroundColor: "rgba(0, 0, 0, 0)", height: '100%'}}>
                 <Modal.Header closeButton>
@@ -142,12 +165,12 @@ const RationComponent = () => {
                             </Form.Text>
                         </InputGroup>
                         <Form.Group className="mb-3 dateAndMealRow">
-                            <TimePicker className="dateAndMeal" onChange={onChange} value={value}/>
-                            <Form.Select className="dateAndMeal">
-                                <option value="1">Сніданок</option>
-                                <option value="2">Обід</option>
-                                <option value="3">Вечеря</option>
-                                <option value="3">Перекус</option>
+                            <TimePicker className="dateAndMeal" onChange={setTime} value={time}/>
+                            <Form.Select className="dateAndMeal" value={mealType}>
+                                <option value="BREAKFAST">Сніданок</option>
+                                <option value="DINNER">Обід</option>
+                                <option value="SUPPER">Вечеря</option>
+                                <option value="SNACK">Перекус</option>
                             </Form.Select>
                         </Form.Group>
                         <InputGroup className="mb-3">
@@ -175,9 +198,9 @@ const RationComponent = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary">
-                        Close
+                        Закрити
                     </Button>
-                    <Button variant="primary" >
+                    <Button variant="primary" onClick={addMeal}>
                          Додати
                     </Button>
                 </Modal.Footer>

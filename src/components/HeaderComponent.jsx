@@ -1,7 +1,5 @@
 import {Link} from "react-router-dom";
 import React, {useContext, useState} from "react";
-import SidebarComponent from "./littleComponents/SidebarComponent";
-import {Context} from "../context/UserContext";
 import {Nav, Navbar} from "react-bootstrap";
 
 const HeaderComponent = () => {

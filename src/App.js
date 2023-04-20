@@ -6,16 +6,13 @@ import HeaderComponent from "./components/HeaderComponent";
 import LoginComponent from "./components/LoginComponent";
 import RegisterComponent from "./components/RegisterComponent";
 import PrivateRoute from "./PrivateRoute";
-import WelcomeComponent from "./components/WelcomeComponent";
 import MyProfileComponent from "./components/MyProfileComponent";
 import RationComponent from "./components/RationComponent";
 import LogoutComponent from "./components/LogoutComponent";
 import ErrorComponent from "./components/ErrorComponent";
 import FooterComponent from "./components/FooterComponent";
 import {useLocalState} from "./util/useLocalStorage";
-import {ProSidebarProvider} from "react-pro-sidebar";
 import {Context, ContextProvider} from "./context/UserContext";
-import SidebarComponent from "./components/littleComponents/SidebarComponent";
 import jwt_decode from "jwt-decode";
 
 const App = () => {
@@ -31,11 +28,6 @@ const App = () => {
                         <Route path='/' element={<LoginComponent/>}/>
                         <Route path='/login' element={<LoginComponent/>}/>
                         <Route path='/register' element={<RegisterComponent/>}/>
-                        <Route path='/welcome/:username' element={
-                            <PrivateRoute>
-                                <WelcomeComponent/>
-                            </PrivateRoute>
-                        }/>
                         <Route path='/myProfile/:username' element={
                             <PrivateRoute>
                                 <MyProfileComponent/>

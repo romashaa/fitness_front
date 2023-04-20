@@ -113,8 +113,19 @@ card{
     alignItems: center;
     /*justifyContent: center;*/
     cursor: pointer;
-    /*margin-left:auto;*/
-    float: right;
+    margin-left:20px;
+    /*float: right;*/
+}
+.headerBrand{
+    margin-left: 5%;
+    font-weight: bold;
+}
+.headerMenuItem{
+    margin-right: 20px;
+    height: 40px;
+}
+.header{
+    background-color: palevioletred;
 }
 /*=========================Ration===========================*/
 @media (max-width: 768px) {
@@ -155,14 +166,42 @@ card{
     display:inline-block;
     width: 85%;
 }
-.headerBrand{
-    margin-left: 5%;
-    font-weight: bold;
+.rationPage {
+    display: flex;
+    flex-direction: column;
+    /*align-items: center;*/
+    /*justify-content: center;*/
+    /*height: 100vh;*/
 }
-.headerMenuItem{
-    margin-right: 20px;
-    height: 40px;
+
+.panel-container {
+    display: flex;
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
 }
-.header{
-    background-color: palevioletred;
+
+.left-panel {
+    flex: 1;
+}
+
+.right-panel {
+    margin-top: 50px;
+    margin-left: auto;
+    max-width: 400px;
+}
+@media screen and (max-width: 768px) {
+    .panel-container {
+        flex-direction: column;
+    }
+
+    .left-panel, .right-panel {
+        flex: 1;
+        max-width: none;
+    }
+
+    .right-panel {
+        margin-left: 0;
+        margin-top: 30px;
+    }
 }

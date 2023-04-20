@@ -68,7 +68,6 @@ const MyProfileComponent = () => {
 
 
     function updateUser(){
-        setShow(false)
         const reqBody = {
             age: age,
             gender: gender,
@@ -83,7 +82,14 @@ const MyProfileComponent = () => {
             method:"put",
             body:JSON.stringify(reqBody)
         }).then(r => alert("updated"));
-
+        setUserData({
+            age: age,
+            gender: gender,
+            goal: aim,
+            height: height,
+            weight: weight
+        })
+        setShow(false)
     }
 
 
