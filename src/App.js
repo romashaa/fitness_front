@@ -1,4 +1,4 @@
-import React, {Component, useContext, useEffect} from 'react';
+import React, {Component, useContext, useEffect, useState} from 'react';
 import './App.css';
 import './components/FitnessApp.css'
 import {BrowserRouter, Route, Routes} from "react-router-dom";
@@ -10,18 +10,13 @@ import MyProfileComponent from "./components/MyProfileComponent";
 import RationComponent from "./components/RationComponent";
 import LogoutComponent from "./components/LogoutComponent";
 import ErrorComponent from "./components/ErrorComponent";
-import FooterComponent from "./components/FooterComponent";
-import {useLocalState} from "./util/useLocalStorage";
-import {Context, ContextProvider} from "./context/UserContext";
-import jwt_decode from "jwt-decode";
+import UserContext from './context/UserContext';
 
 const App = () => {
-    // const {user} = useContext(Context);
-    // user.setUser(jwt_decode(localStorage.getItem("jwt")))
+    const [currentUser, setCurrentUser] = useState(null);
     return (
-        <ContextProvider>
         <div className="App">
-
+            <UserContext.Provider value={{ currentUser, setCurrentUser }}>
                 <BrowserRouter>
                     <HeaderComponent/>
                     <Routes>
@@ -46,8 +41,9 @@ const App = () => {
                         <Route path='*' element={<ErrorComponent/>}/>
                     </Routes>
                 </BrowserRouter>
+            </UserContext.Provider>
         </div>
-        </ContextProvider>
+
     );
 }
 export default App;

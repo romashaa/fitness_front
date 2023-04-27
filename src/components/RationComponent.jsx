@@ -1,10 +1,5 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, useSyncExternalStore} from 'react';
 import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import breakfast from '../img/breakfast.jpg'
-import dinner from '../img/dinner.jpg'
-import snack from '../img/snack.jpg'
-import supper from '../img/supper.jpg'
 import {Col, Container, Form, ListGroup, Modal, Row} from "react-bootstrap";
 import {FaPlus} from "react-icons/fa";
 import TimePicker from "react-time-picker";
@@ -14,50 +9,58 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import axios from "axios";
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
-import {UserContext} from "../context/UserContext";
-import {logDOM} from "@testing-library/react";
 
 const RationComponent = () => {
-    const [open, setOpen] = React.useState(true);
     const [show, setShow] = useState(false);
     const [time, setTime] = useState('10:00');
     const [grams, setGrams] = useState('')
-    const [mealType, setMealType] = useState("")
+    const [mealType, setMealType] = useState("BREAKFAST")
     const [dishOptions, setDishOptions] = useState([])
     const [dishName, setDishName] = useState("")
     const [currentDish, setCurrentDish] = useState({})
     const [suggestions, setSuggestions] = useState([])
-    const [date, setDate] = useState(new Date());
-    const {currentUser, setCurrentUser} = useContext(UserContext)
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [breakfastList, setBreakfastList] = useState([])
+    const [dinnerList, setDinnerList] = useState([])
+    const [supperList, setSupperList] = useState([])
+    const [snackList, setSnackList] = useState([])
 
+    const currentUser = localStorage.getItem('currentUser')
     const handleGramsChange = (event) => {
         const inputValue = event.target.value.slice(0, 4); // limit input to 4 characters
         setGrams(inputValue);
     }
-    const pickDate = (date) => {
-      setDate(date)
-        console.log(date)
-        console.log(currentUser)
+    const handleSelectTypeChange = (event) => {
+        setMealType(event.target.value); // update mealType state when selection changes
     }
-
+    const pickDate = (date) => {
+        const newDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+        setSelectedDate(newDate)
+        console.log(newDate)
+    }
     const addMeal = () => {
         const mealData = {
             mealType:mealType,
-            date:date,
+            date:selectedDate,
             time:time,
             grams:grams,
             dishName:dishName
         };
-
-        axios.post(`/api/auth/meals/addMeal/${currentUser}`, mealData)
-            .then(response => {
-                console.log('New meal added:', response.data);
-                // Add the new meal to the list of meals in your component state
+        fetch(`/api/auth/meals/addMeal/${currentUser}`,{
+            headers:{
+                "Content-type":"application/json"
+            },
+            method:"post",
+            body:JSON.stringify(mealData)
+        })
+            .then((response) => {
+                console.log('New meal added');
             })
             .catch(error => {
-                console.error('Error adding new meal:', error);
-                // Handle the error
-            });
+            console.error('Error adding new meal:', error);
+            // Handle the error
+        });
+        setShow(false)
     }
     useEffect(() => {
         const loadDishes = async () => {
@@ -66,6 +69,22 @@ const RationComponent = () => {
         }
         loadDishes();
     }, [])
+
+
+    useEffect(()=>{
+        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=BREAKFAST`)
+            .then(response => response.json())
+            .then(data => setBreakfastList(data));
+        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=DINNER`)
+            .then(response => response.json())
+            .then(data => setDinnerList(data));
+        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=SUPPER`)
+            .then(response => response.json())
+            .then(data => setSupperList(data));
+        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=SNACK`)
+            .then(response => response.json())
+            .then(data => setSnackList(data));
+    }, [selectedDate, show])
 
     const onSuggestHandler = (text) => {
         setDishName(text);
@@ -106,25 +125,59 @@ const RationComponent = () => {
                                 Сніданок
                                 <div>
                                     <ListGroup as="ul" variant="flush" className="menuListItem">
-                                        <ListGroup.Item as="li">
-                                            Cras justo odio
-                                        </ListGroup.Item>
-                                        <ListGroup.Item as="li">Dapibus ac facilisis in</ListGroup.Item>
-                                        <ListGroup.Item as="li">
-                                            Morbi leo risus
-                                        </ListGroup.Item>
-                                        <ListGroup.Item as="li">Porta ac consectetur ac</ListGroup.Item>
+                                        {breakfastList.map(meal=>(
+                                            <ListGroup.Item as="li" key={meal.dish.id}>
+                                                {meal.dish.dishName}, {meal.grams}г
+                                            </ListGroup.Item>
+                                        ))}
+
                                     </ListGroup>
                                 </div>
                             </ListGroup.Item>
-                            <ListGroup.Item as="li" variant="flush">Обід</ListGroup.Item>
-                            <ListGroup.Item as="li" variant="flush">Вечеря</ListGroup.Item>
-                            <ListGroup.Item as="li" variant="flush">Перекус</ListGroup.Item>
+                            <ListGroup.Item as="li" variant="flush">
+                                Обід
+                                <div>
+                                    <ListGroup as="ul" variant="flush" className="menuListItem">
+                                        {dinnerList.map(meal=>(
+                                            <ListGroup.Item as="li" key={meal.dish.id}>
+                                                {meal.dish.dishName}, {meal.grams}г
+                                            </ListGroup.Item>
+                                        ))}
+
+                                    </ListGroup>
+                                </div>
+                            </ListGroup.Item>
+                            <ListGroup.Item as="li" variant="flush">
+                                Вечеря
+                                <div>
+                                    <ListGroup as="ul" variant="flush" className="menuListItem">
+                                        {supperList.map(meal=>(
+                                            <ListGroup.Item as="li" key={meal.dish.id}>
+                                                {meal.dish.dishName}, {meal.grams}г
+                                            </ListGroup.Item>
+                                        ))}
+
+                                    </ListGroup>
+                                </div>
+                            </ListGroup.Item>
+                            <ListGroup.Item as="li" variant="flush">
+                                Перекус
+                                <div>
+                                    <ListGroup as="ul" variant="flush" className="menuListItem">
+                                        {snackList.map(meal=>(
+                                            <ListGroup.Item as="li" key={meal.dish.id}>
+                                                {meal.dish.dishName}, {meal.grams}г
+                                            </ListGroup.Item>
+                                        ))}
+
+                                    </ListGroup>
+                                </div>
+                            </ListGroup.Item>
                         </ListGroup>
                     </div>
                 </div>
                 <div className="right-panel">
-                    <Calendar onChange={pickDate} value={date}/>
+                    <Calendar onChange={pickDate} value={selectedDate}/>
                 </div>
             </div>
 
@@ -166,7 +219,7 @@ const RationComponent = () => {
                         </InputGroup>
                         <Form.Group className="mb-3 dateAndMealRow">
                             <TimePicker className="dateAndMeal" onChange={setTime} value={time}/>
-                            <Form.Select className="dateAndMeal" value={mealType}>
+                            <Form.Select className="dateAndMeal" value={mealType} onChange={handleSelectTypeChange}>
                                 <option value="BREAKFAST">Сніданок</option>
                                 <option value="DINNER">Обід</option>
                                 <option value="SUPPER">Вечеря</option>
@@ -192,8 +245,6 @@ const RationComponent = () => {
                         <Form.Text className="text-muted">
                             На {grams} г: (Ккал: {currentDish.calories/100*grams}, Б:{currentDish.bilki/100*grams}, Ж:{currentDish.fats/100*grams}, В:{currentDish.vuhlevody/100*grams} )
                         </Form.Text>
-
-
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>

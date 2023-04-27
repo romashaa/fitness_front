@@ -3,18 +3,18 @@ import {Accordion, Card, InputGroup, ListGroup, Modal, FormCheck, Form} from "re
 import avatar from '../img/avatar.png'
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import {UserContext} from "../context/UserContext";
-import jwt_decode from "jwt-decode";
-import {logDOM} from "@testing-library/react";
+import UserContext from "../context/UserContext";
+
 
 const MyProfileComponent = () => {
     const [age, setAge] = useState()
     const [gender, setGender]=useState("FEMALE")
-    const [aim, setAim]=useState("")
+    const [activityLevel, setActivityLevel]=useState("")
     const [height, setHeight] = useState()
     const [weight, setWeight]=useState()
     const [show, setShow] = useState(false);
-    // let user = jwt_decode(localStorage.getItem("jwt")).sub;
+    const [caloriesNorm, setCaloriesNorm]=useState(0)
+    const [loaded, setLoaded] = useState(false)
     const {currentUser, setCurrentUser} = useContext(UserContext)
     const [userData, setUserData] = useState({});
 
@@ -23,17 +23,22 @@ const MyProfileComponent = () => {
         if (storedUser) {
             setCurrentUser(storedUser);
         }
-        console.log(storedUser)
+        //console.log(storedUser)
         if(currentUser) {
-            axios.get(`api/auth/user/${currentUser}`)
+             axios.get(`api/auth/user/${currentUser}`)
                 .then(response => {
                     setUserData(response.data);
-                })
-                .catch(error => {
+                    setNorm()
+                }).catch(error => {
                     console.log(error);
+                }).finally(()=>{
+                 setLoaded(true)
+                 console.log("masha loh")
                 });
         }
-    }, [currentUser]);
+        setLoaded(true)
+
+    }, [currentUser, caloriesNorm]);
 
 
 
@@ -44,15 +49,15 @@ const MyProfileComponent = () => {
         setWeight(userData.weight)
         setHeight(userData.height)
         setAge(userData.age)
-        setAim(userData.goal)
+        setActivityLevel(userData.activityLevel)
         setShow(true);
     }
 
     function handleGenderChange(event) {
         setGender(event.target.value)
     }
-    function handleAimChange(event) {
-        setAim(event.target.value)
+    function handleActivityLevelChange(event) {
+        setActivityLevel(event.target.value)
     }
     function handleAgeChange(event) {
         setAge(event.target.value)
@@ -71,7 +76,7 @@ const MyProfileComponent = () => {
         const reqBody = {
             age: age,
             gender: gender,
-            goal: aim,
+            activityLevel: activityLevel,
             height: height,
             weight: weight
         }
@@ -85,30 +90,73 @@ const MyProfileComponent = () => {
         setUserData({
             age: age,
             gender: gender,
-            goal: aim,
+            activityLevel: activityLevel,
             height: height,
             weight: weight
         })
         setShow(false)
     }
 
+    const setNorm = () =>{
+        let norm;
+        if(userData.gender==='FEMALE'){
+            norm=10 * userData.weight + 6.25 * userData.height - 5 * userData.age - 161;
+        }
+        if(userData.gender==='MALE'){
+            norm= 10 * userData.weight + 6.25 * userData.height - 5 * userData.age + 5;
+        }
+        let norm2;
+        if(userData.activityLevel==='SEDENTARY_ACTIVE'){
+            norm2=norm*1.2;
+        }
+        if(userData.activityLevel==='LIGHTLY_ACTIVE'){
+            norm2=norm*1.375;
+        }
+        if(userData.activityLevel==='MODERATELY_ACTIVE'){
+            norm2=norm*1.55;
+        }
+        if(userData.activityLevel==='ACTIVE'){
+            norm2=norm*1.725;
+        }
+        if(userData.activityLevel==='VERY_ACTIVE'){
+            norm2=norm*1.9;
+        }
+         setCaloriesNorm(Math.round(norm2));
 
+    }
+
+    function countNorm() {
+        setNorm();
+       // console.log(caloriesNorm);
+        fetch(`api/auth/user/${currentUser}/countNorm?norm=${caloriesNorm}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(response => {
+                // handle response
+            })
+            .catch(error => {
+                // handle error
+            });
+    }
 
     return (
         <div>
             <Modal show={show} onHide={handleClose} style={{backgroundColor: "rgba(0, 0, 0, 0)", height:'100%'}}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Modal heading</Modal.Title>
+                    <Modal.Title>Мої дані</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group>
-                            <Form.Label className="ml-0">Age</Form.Label>
-                            <Form.Control type="email" placeholder="Enter age" value={age}
+                            <Form.Label className="ml-0">Вік</Form.Label>
+                            <Form.Control type="email" placeholder="Введіть вік" value={age}
                                           onChange={handleAgeChange}/>
                         </Form.Group>
                         <Form.Group>
-                            <Form.Label>Gender</Form.Label>
+                            <Form.Label>Стать</Form.Label>
                             <Form.Check
                                 inline
                                 label="Чоловіча"
@@ -131,20 +179,22 @@ const MyProfileComponent = () => {
                             />
                         </Form.Group>
                         <Form.Group>
-                            <Form.Label>Goal</Form.Label>
-                            <Form.Select aria-label="Оберіть ціль" value={aim} onChange={handleAimChange}>
-                                <option value="STAYINFORM">Залишатися в формі</option>
-                                <option value="LOSEWEIGHT">Схуднути</option>
-                                <option value="BIGMUSCLES">Набрати м'язову масу</option>
+                            <Form.Label>Спосіб життя</Form.Label>
+                            <Form.Select aria-label="Спосіб життя" value={activityLevel} onChange={handleActivityLevelChange}>
+                                <option value="SEDENTARY_ACTIVE">Малорухливий</option>
+                                <option value="LIGHTLY_ACTIVE">Злегка активний</option>
+                                <option value="MODERATELY_ACTIVE">Помірно активний</option>
+                                <option value="ACTIVE">Активний</option>
+                                <option value="VERY_ACTIVE">Дуже активний</option>
                             </Form.Select>
                         </Form.Group>
                         <Form.Group>
-                            <Form.Label>Height</Form.Label>
+                            <Form.Label>Зріст</Form.Label>
                             <Form.Control type="text" placeholder="Enter height" value={height}
                                           onChange={handleHeightChange}/>
                         </Form.Group>
                         <Form.Group>
-                            <Form.Label>Weight</Form.Label>
+                            <Form.Label>Вага</Form.Label>
                             <Form.Control type="text" placeholder="Enter weight" value={weight}
                                           onChange={handleWeightChange}/>
                         </Form.Group>
@@ -160,32 +210,47 @@ const MyProfileComponent = () => {
                 </Modal.Footer>
             </Modal>
             <div>
-                <div className="row">
-                    <Card className="row m-auto col-md-4">
-                        <Card.Img className="m-auto" style={{width:"18rem"}} variant="top" src={avatar}/>
+                <div className="container">
+                    {loaded ?
+                        <Card className="m-auto col-md-4">
+                            <Card.Img className="m-auto" style={{width: "18rem"}} variant="top" src={avatar}/>
+                            <Card.Body>
+                                <Card.Title>{currentUser}</Card.Title>
+                            </Card.Body>
+                            <ListGroup className="list-group-flush">
+                                {userData.gender === "MALE" ? <ListGroup.Item>Стать : Чоловіча </ListGroup.Item>
+                                    : <ListGroup.Item>Стать : Жіноча </ListGroup.Item>}
+                                <ListGroup.Item>Вік: {userData.age}</ListGroup.Item>
+                                <ListGroup.Item>Зріст: {userData.height}</ListGroup.Item>
+                                <ListGroup.Item>Вага: {userData.weight}</ListGroup.Item>
+                                {userData.activityLevel === "SEDENTARY_ACTIVE" ?
+                                    <ListGroup.Item>Спосіб життя: Малорухливий</ListGroup.Item> :
+                                    userData.activityLevel === "LIGHTLY_ACTIVE" ?
+                                        <ListGroup.Item>Спосіб життя: Злегка активний</ListGroup.Item> :
+                                        userData.activityLevel === "MODERATELY_ACTIVE" ?
+                                            <ListGroup.Item>Спосіб життя: Помірно активний</ListGroup.Item> :
+                                            userData.activityLevel === "ACTIVE" ?
+                                                <ListGroup.Item>Спосіб життя: Активний</ListGroup.Item> :
+                                                <ListGroup.Item>Спосіб життя: Дуже активний</ListGroup.Item>}
+                            </ListGroup>
+                            <Card.Body>
+                                <Button variant="primary" onClick={handleShow}>
+                                    Редагувати
+                                </Button>
+                            </Card.Body>
+                        </Card> : <div>Dgdfxgdsfg...</div>
+                    }
+                    <Card bg='light' border='success' className='small-card' style={{position:"absolute", top:"10px", right:"5%"}}>
+                        <Card.Header><b>Ваша норма калорій на день</b></Card.Header>
                         <Card.Body>
-                            <Card.Title>{currentUser}</Card.Title>
-                        </Card.Body>
-                        <ListGroup className="list-group-flush">
-                            {userData.gender ==="MALE"? <ListGroup.Item>Стать :  Чоловіча </ListGroup.Item>
-                                : <ListGroup.Item>Стать : Жіноча </ListGroup.Item>}
-                            <ListGroup.Item>Вік: {userData.age}</ListGroup.Item>
-                            <ListGroup.Item>Зріст: {userData.height}</ListGroup.Item>
-                            <ListGroup.Item>Вага: {userData.weight}</ListGroup.Item>
-                            {userData.goal==="BIGMUSCLES" ? <ListGroup.Item>Ціль: Набрати м'язову масу</ListGroup.Item> :
-                                userData.goal==="LOSEWEIGHT" ? <ListGroup.Item>Ціль: Схуднути</ListGroup.Item> :
-                                    <ListGroup.Item>Ціль: Залишатися в формі</ListGroup.Item>}
-
-
-                        </ListGroup>
-                        <Card.Body>
-                            <Button variant="primary" onClick={handleShow}>
-                                Редагувати
+                            <Card.Text>
+                                На добу вам рекомендовано вживати: {loaded ? caloriesNorm : 0} ккал
+                            </Card.Text>
+                            <Button variant="primary" onClick={countNorm}>
+                                Розрахувати
                             </Button>
                         </Card.Body>
                     </Card>
-
-
                 </div>
             </div>
         </div>

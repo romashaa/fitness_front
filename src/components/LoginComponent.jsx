@@ -4,8 +4,7 @@ import {Form, Row} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import {useLocalState} from "../util/useLocalStorage";
 import jwt_decode from "jwt-decode";
-import {UserContext} from "../context/UserContext";
-
+import UserContext from "../context/UserContext";
 
 const LoginComponent = () => {
     const [username, setUsername] = useState('')
@@ -14,7 +13,7 @@ const LoginComponent = () => {
     const navigate = useNavigate()
     const [jwt, setJwt] = useLocalState("","jwt")
 
-    const {currentUser, setCurrentUser} = useContext(UserContext);
+    const {setCurrentUser} = useContext(UserContext);
 
     function handleUsernameChange(event) {
         setUsername(event.target.value)
@@ -49,14 +48,14 @@ const LoginComponent = () => {
                  const authValue = headers.get("authorization");
                  localStorage.setItem("jwt", JSON.stringify(authValue));
                  navigate(`/myProfile/${username}`)
-                setCurrentUser(jwt_decode(authValue).sub)
                 localStorage.setItem('currentUser',  jwt_decode(authValue).sub);
                 console.log(jwt_decode(authValue).sub)
+                setCurrentUser(jwt_decode(authValue).sub)
             }).catch((message)=> {
                alert(message)
                console.log(message)
-
         });
+       // setCurrentUser(jwt_decode(localStorage.getItem('jwt')).sub)
         //navigate(`/welcome/${username}`)
     }
 
