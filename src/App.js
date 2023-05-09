@@ -8,12 +8,11 @@ import RegisterComponent from "./components/RegisterComponent";
 import PrivateRoute from "./PrivateRoute";
 import MyProfileComponent from "./components/MyProfileComponent";
 import RationComponent from "./components/RationComponent";
-import LogoutComponent from "./components/LogoutComponent";
 import ErrorComponent from "./components/ErrorComponent";
 import UserContext from './context/UserContext';
 
 const App = () => {
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState("");
     return (
         <div className="App">
             <UserContext.Provider value={{ currentUser, setCurrentUser }}>
@@ -31,11 +30,6 @@ const App = () => {
                         <Route path='/ration' element={
                             <PrivateRoute>
                                 <RationComponent/>
-                            </PrivateRoute>
-                        }/>
-                        <Route path='/logout' element={
-                            <PrivateRoute>
-                                <LogoutComponent/>
                             </PrivateRoute>
                         }/>
                         <Route path='*' element={<ErrorComponent/>}/>

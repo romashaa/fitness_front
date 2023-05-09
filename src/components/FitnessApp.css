@@ -19,7 +19,7 @@ nav{
     display: flex;
     align-items: center;
     background-color:indianred;
-    margin-bottom: 20px;
+    /*margin-bottom: 20px;*/
 }
 .navbar-nav{
     margin-left: auto;
@@ -79,6 +79,20 @@ card{
     /* add other styles for the small card */
 }
 /*=========================Ration===========================*/
+.infoRow {
+    /*background-color: darkseagreen;*/
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* create five equal-width columns */
+    grid-gap: 1px; /* add gap between columns */
+    height: 50px; /* set height of row to remaining height */
+    /*padding-bottom: 5px;*/
+    border-bottom: 1px solid #282c34;
+}
+
+.Column {
+    background-color:rgba(216,137,122,0.51);
+    padding: 10px;
+}
 @media (max-width: 768px) {
    .dateAndMeal{
        display:block;

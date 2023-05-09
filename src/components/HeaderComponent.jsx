@@ -9,17 +9,33 @@ const HeaderComponent = () => {
     const handleMobileMenuToggle = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
+
+    function handleLogout() {
+        localStorage.removeItem('jwt')
+        localStorage.removeItem('currentUser')
+    }
+
     return (
         <Navbar expand="md" className="header">
             <Navbar.Brand href="/" className="headerBrand">Fitness App</Navbar.Brand>
             <Navbar.Toggle onClick={handleMobileMenuToggle} />
             <Navbar.Collapse className="justify-content-end" isOpen={isMobileMenuOpen}>
                 <Nav>
-                    <Nav.Link className="headerMenuItem fs-5" href="/myProfile/masha">Мій профіль</Nav.Link>
-                    <Nav.Link className="headerMenuItem fs-5" href="/ration">Раціон</Nav.Link>
-                    <Nav.Link className="headerMenuItem fs-5" href="/login">Login</Nav.Link>
-                    <Nav.Link className="headerMenuItem fs-5" href="/register">Register</Nav.Link>
-                    <Nav.Link className="headerMenuItem fs-5" href="/logout">Logout</Nav.Link>
+                    {localStorage.getItem("currentUser")===null ?
+                        (<>
+                            <Nav.Link className="headerMenuItem fs-5" href="/login">Login</Nav.Link>
+                            <Nav.Link className="headerMenuItem fs-5" href="/register">Register</Nav.Link>
+                        </>)
+                        :
+                        (<>
+                            <Nav.Link className="headerMenuItem fs-5" href="/myProfile/masha">Мій профіль</Nav.Link>
+                            <Nav.Link className="headerMenuItem fs-5" href="/ration">Раціон</Nav.Link>
+                            <Nav.Link className="headerMenuItem fs-5" onClick={handleLogout} href="/login">Logout</Nav.Link>
+                        </>)
+                    }
+
+
+
                 </Nav>
             </Navbar.Collapse>
         </Navbar>

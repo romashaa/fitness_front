@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {Form, Row} from "react-bootstrap";
+import {Link, useNavigate} from "react-router-dom";
+import {Form, FormText, InputGroup, Row} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import {useLocalState} from "../util/useLocalStorage";
 import jwt_decode from "jwt-decode";
@@ -11,9 +11,6 @@ const LoginComponent = () => {
     const [password, setPassword] = useState('')
     const [showErrorMessage, setShowErrorMessage] = useState(false)
     const navigate = useNavigate()
-    const [jwt, setJwt] = useLocalState("","jwt")
-
-    const {setCurrentUser} = useContext(UserContext);
 
     function handleUsernameChange(event) {
         setUsername(event.target.value)
@@ -29,8 +26,6 @@ const LoginComponent = () => {
             username: username,
             password: password,
         }
-
-
         fetch('api/auth/login',{
             headers:{
                 "Content-type":"application/json"
@@ -44,38 +39,39 @@ const LoginComponent = () => {
                 else return Promise.reject("Invalid login attempt")
             })
             .then(([body,headers]) =>{
-               // setJwt(headers.get("authorization"));
                  const authValue = headers.get("authorization");
                  localStorage.setItem("jwt", JSON.stringify(authValue));
                  navigate(`/myProfile/${username}`)
-                localStorage.setItem('currentUser',  jwt_decode(authValue).sub);
-                console.log(jwt_decode(authValue).sub)
-                setCurrentUser(jwt_decode(authValue).sub)
+                 localStorage.setItem('currentUser',  jwt_decode(authValue).sub);
+                 console.log(jwt_decode(authValue).sub)
             }).catch((message)=> {
                alert(message)
                console.log(message)
         });
-       // setCurrentUser(jwt_decode(localStorage.getItem('jwt')).sub)
-        //navigate(`/welcome/${username}`)
     }
 
     return (
         <div className="Login ">
+            <h1>Увійти</h1>
             <Row className="justify-content-md-center">
-                <Form className="col-5">
+                <Form className="col-4">
                     <Form.Group>
-                        <Form.Label>Username</Form.Label>
+                        <Form.Label>Ім'я користувача/e-mail</Form.Label>
                         <Form.Control type="text" placeholder="Enter username" value={username}
                                       onChange={handleUsernameChange}/>
                     </Form.Group>
                     <Form.Group>
-                        <Form.Label>Password</Form.Label>
+                        <Form.Label>Пароль</Form.Label>
                         <Form.Control type="password" placeholder="Password" value={password}
                                       onChange={handlePasswordChange}/>
                     </Form.Group>
-                    <Button variant="primary" size="lg" type="submit" onClick={handleSubmit}>
+                    <Button style={{margin:"10px"}} variant="primary" size="lg" type="submit" onClick={handleSubmit}>
                         Login
-                    </Button>
+                    </Button><br/>
+                    <FormText>
+                        <Link to='/register'>Ще не маєте акаунту? Зареєструватися.</Link>
+                    </FormText>
+
                 </Form>
             </Row>
             {showErrorMessage &&

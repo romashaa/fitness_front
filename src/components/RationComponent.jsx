@@ -2,143 +2,113 @@ import React, {useContext, useEffect, useState, useSyncExternalStore} from 'reac
 import Button from 'react-bootstrap/Button';
 import {Col, Container, Form, ListGroup, Modal, Row, Tab, Tabs} from "react-bootstrap";
 import {FaPlus} from "react-icons/fa";
-import TimePicker from "react-time-picker";
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faSearch} from '@fortawesome/free-solid-svg-icons'
-import InputGroup from 'react-bootstrap/InputGroup';
 import axios from "axios";
 import Calendar from "react-calendar";
 import 'react-calendar/dist/Calendar.css';
 import MealModal from "./littleComponents/MealModal";
+import SportModal from "./littleComponents/SportModal";
+import UserContext from "../context/UserContext";
 
 const RationComponent = () => {
-    const [mealModalShow, setMealModalShow] = useState(false);
-    // const [time, setTime] = useState('10:00');
-    // const [grams, setGrams] = useState('')
-    // const [mealType, setMealType] = useState("BREAKFAST")
-    // const [dishOptions, setDishOptions] = useState([])
-    // const [dishName, setDishName] = useState("")
-    // const [currentDish, setCurrentDish] = useState({})
-    // const [suggestions, setSuggestions] = useState([])
+    const [mealModalShow, setMealModalShow] = useState(false)
+    const [sportModalShow, setSportModalShow] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [breakfastList, setBreakfastList] = useState([])
-    const [dinnerList, setDinnerList] = useState([])
-    const [supperList, setSupperList] = useState([])
-    const [snackList, setSnackList] = useState([])
-    const [sportOptions, setSportOptions] = useState({})
-
+    const [mealList, setMealList] = useState([])
+    const [activityList, setActivityList] = useState([])
+    const [dayNorm, setDayNorm] = useState("")
+    const [totalGrams, setTotalGrams] = useState("")
+    const [eaten, setEaten] = useState("")
+    const [spent, setSpent] = useState("")
+    const [left, setLeft] = useState(0)
+ //   const {currentUser, setCurrentUser} = useContext(UserContext)
     const currentUser = localStorage.getItem('currentUser')
-    // const handleGramsChange = (event) => {
-    //     const inputValue = event.target.value.slice(0, 4); // limit input to 4 characters
-    //     setGrams(inputValue);
-    // }
-    // const handleSelectTypeChange = (event) => {
-    //     setMealType(event.target.value); // update mealType state when selection changes
-    // }
     const pickDate = (date) => {
         const newDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
         setSelectedDate(newDate)
         console.log(newDate)
+        console.log("user:"+ currentUser)
     }
-    // const addMeal = () => {
-    //     const mealData = {
-    //         mealType:mealType,
-    //         date:selectedDate,
-    //         time:time,
-    //         grams:grams,
-    //         dishName:dishName
-    //     };
-    //     fetch(`/api/auth/meals/addMeal/${currentUser}`,{
-    //         headers:{
-    //             "Content-type":"application/json"
-    //         },
-    //         method:"post",
-    //         body:JSON.stringify(mealData)
-    //     })
-    //         .then((response) => {
-    //             console.log('New meal added');
-    //         })
-    //         .catch(error => {
-    //         console.error('Error adding new meal:', error);
-    //         // Handle the error
-    //     });
-    //     setShow(false)
-    // }
-    // useEffect(() => {
-    //     const loadDishes = async () => {
-    //         const response = await axios.get("/dishes/all");
-    //         setDishOptions(response.data)
-    //     }
-    //     loadDishes();
-    // }, [])
 
-    // useEffect(() => {
-    //     const loadActivities = async () => {
-    //         const response = await axios.get("/sport/all");
-    //         setSportOptions(response.data)
-    //     }
-    //     loadActivities();
-    // }, [])
+    useEffect(() => {
+        fetchActivities()
+            .then((activities) => setActivityList(activities))
+            .catch((error) => console.error(error));
+    }, [selectedDate])
+    useEffect(() => {
+        fetchMeals()
+            .then((meals) => setMealList(meals))
+            .catch((error) => console.error(error));
+    }, [selectedDate])
 
+    useEffect( () => {
+        axios.get(`/api/auth/info/dayNorm/${currentUser}`)
+            .then((response) => setDayNorm(response.data))
+    }, [])
+
+    useEffect( () => {
+         axios.get(`/api/auth/info/dayReceived/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}`)
+             .then((response) => setEaten(response.data))
+    }, [selectedDate, mealList])
     useEffect(()=>{
-        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=BREAKFAST`)
-            .then(response => response.json())
-            .then(data => setBreakfastList(data));
-        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=DINNER`)
-            .then(response => response.json())
-            .then(data => setDinnerList(data));
-        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=SUPPER`)
-            .then(response => response.json())
-            .then(data => setSupperList(data));
-        fetch(`/api/auth/meals/mealsOfType/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}&type=SNACK`)
-            .then(response => response.json())
-            .then(data => setSnackList(data));
-    }, [selectedDate, mealModalShow])
+        setLeft(dayNorm-eaten)
+    }, [eaten])
+    // useEffect(async () => {
+    //     await axios.get(`/api/auth/info/dayReceived/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}\``)
+    // }, [selectedDate])
 
-    // const onSuggestHandler = (text) => {
-    //     setDishName(text);
-    //     setSuggestions([]);
-    //     setCurrentDish(dishOptions.find(dish=> dish.dishName===text))
-    // }
+    const fetchActivities = async () => {
+        const response = await fetch(`/api/auth/sport/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}`);
+        const activities = await response.json();
+        return activities;
+    };
+    const fetchMeals = async () => {
+        const response = await fetch(`/api/auth/meals/${currentUser}?date=${(selectedDate.toISOString()).slice(0, 10)}`);
+        const meals = await response.json();
+        return meals;
+    };
+    const handleActivityAdded = () => {
+        fetchActivities()
+            .then((activities) => setActivityList(activities))
+            .catch((error) => console.error(error));
+    }
+    const handleMealAdded = () => {
+        fetchMeals()
+            .then((meals) => setMealList(meals))
+            .catch((error) => console.error(error));
+    }
 
-    // const handleDishInputChange = (dishName) => {
-    //     let matches = []
-    //     if (dishName.length > 0) {
-    //         const dishnames = dishOptions.map(dish => dish.dishName)
-    //
-    //         matches = dishnames.filter(dishname => {
-    //             const regex = new RegExp(`${dishName}`, "gi");
-    //             return dishname.match(regex)
-    //         })
-    //     }
-    //   //  console.log(matches)
-    //     setSuggestions(matches)
-    //     setDishName(dishName)
-    // }
-
-    const handleClose = () => setMealModalShow(false);
-    const handleShow = () => setMealModalShow(true);
+    const handleMealClose = () => setMealModalShow(false);
+    const handleMealShow = () => setMealModalShow(true);
+    const handleSportClose = () => setSportModalShow(false);
+    const handleSportShow = () => setSportModalShow(true);
 
 
     return (
         <div className="rationPage">
+            <div className="infoRow">
+                <div className="Column">Вага:</div>
+                <div className="Column">Норма: {dayNorm} ккал</div>
+                <div className="Column">Отримано: {eaten} ккал</div>
+                <div className="Column">Витрачено: {spent} ккал</div>
+                <div className="Column">Залишилось: {left} ккал</div>
+            </div>
 
             <div className="panel-container">
                 <div className="left-panel">
                     <Tabs
-                        defaultActiveKey="profile"
+                        defaultActiveKey="ration"
                         id="uncontrolled-tab-example"
                         className="mb-3"
                     >
                         <Tab eventKey="ration" title="Мій раціон">
-                            <h2>Додати прийом їжі<FaPlus className="menuItemBtn" onClick={handleShow}/></h2>
+                            <h2>Додати прийом їжі<FaPlus className="menuItemBtn" onClick={handleMealShow}/></h2>
                             <div className="col-md-7 col-sm-8 m-auto menuList">
                                 <ListGroup as="ul">
                                     <ListGroup.Item as="li" variant="flush">
                                         Сніданок
                                         <div>
                                             <ListGroup as="ul" variant="flush" className="menuListItem">
-                                                {breakfastList.map(meal=>(
+                                                {(mealList.filter((meal) => meal.mealType === "BREAKFAST")).map(meal=>(
                                                     <ListGroup.Item as="li" key={meal.dish.id}>
                                                         {meal.dish.dishName}, {meal.grams}г
                                                     </ListGroup.Item>
@@ -151,7 +121,7 @@ const RationComponent = () => {
                                         Обід
                                         <div>
                                             <ListGroup as="ul" variant="flush" className="menuListItem">
-                                                {dinnerList.map(meal=>(
+                                                {(mealList.filter((meal) => meal.mealType === "DINNER")).map(meal=>(
                                                     <ListGroup.Item as="li" key={meal.dish.id}>
                                                         {meal.dish.dishName}, {meal.grams}г
                                                     </ListGroup.Item>
@@ -164,7 +134,7 @@ const RationComponent = () => {
                                         Вечеря
                                         <div>
                                             <ListGroup as="ul" variant="flush" className="menuListItem">
-                                                {supperList.map(meal=>(
+                                                {(mealList.filter((meal) => meal.mealType === "SUPPER")).map(meal=>(
                                                     <ListGroup.Item as="li" key={meal.dish.id}>
                                                         {meal.dish.dishName}, {meal.grams}г
                                                     </ListGroup.Item>
@@ -177,7 +147,7 @@ const RationComponent = () => {
                                         Перекус
                                         <div>
                                             <ListGroup as="ul" variant="flush" className="menuListItem">
-                                                {snackList.map(meal=>(
+                                                {(mealList.filter((meal) => meal.mealType === "SNACK")).map(meal=>(
                                                     <ListGroup.Item as="li" key={meal.dish.id}>
                                                         {meal.dish.dishName}, {meal.grams}г
                                                     </ListGroup.Item>
@@ -190,12 +160,14 @@ const RationComponent = () => {
                             </div>
                         </Tab>
                         <Tab eventKey="physicalActivities" title="Мої фізичні навантаження">
+                            <h2>Додати навантаження<FaPlus className="menuItemBtn" onClick={handleSportShow}/></h2>
+
                             <ListGroup className="col-md-7 col-sm-8 m-auto menuList">
-                                <ListGroup.Item>Cras justo odio</ListGroup.Item>
-                                <ListGroup.Item>Dapibus ac facilisis in</ListGroup.Item>
-                                <ListGroup.Item>Morbi leo risus</ListGroup.Item>
-                                <ListGroup.Item>Porta ac consectetur ac</ListGroup.Item>
-                                <ListGroup.Item>Vestibulum at eros</ListGroup.Item>
+                                {activityList.map(activity=>(
+                                    <ListGroup.Item as="li" key={activity.sport.id}>
+                                        {activity.sport.name}, {activity.duration} хв
+                                    </ListGroup.Item>
+                                ))}
                             </ListGroup>
                         </Tab>
                     </Tabs>
@@ -205,83 +177,8 @@ const RationComponent = () => {
                     <Calendar onChange={pickDate} value={selectedDate}/>
                 </div>
             </div>
-
-
-           <MealModal show = {mealModalShow} onHide={handleClose} selectedDate={selectedDate}/>
-
-            {/*<Modal show={show} onHide={handleClose} style={{backgroundColor: "rgba(0, 0, 0, 0)", height: '100%'}}>*/}
-            {/*    <Modal.Header closeButton>*/}
-            {/*        <Modal.Title>Прийом їжі</Modal.Title>*/}
-            {/*    </Modal.Header>*/}
-            {/*    <Modal.Body>*/}
-            {/*        <Form>*/}
-            {/*            <InputGroup className="mb-3">*/}
-            {/*                <InputGroup.Text id="basic-addon1">*/}
-            {/*                    <FontAwesomeIcon icon={faSearch}/>*/}
-            {/*                </InputGroup.Text>*/}
-            {/*                <Form.Control*/}
-            {/*                    placeholder="Введіть текст для пошуку страви"*/}
-            {/*                    type="text"*/}
-            {/*                    value={dishName}*/}
-            {/*                    onChange={e => handleDishInputChange(e.target.value)}*/}
-            {/*                    className="dishInput"*/}
-            {/*                    style={{display: "inline-block", width: "85%"}}*/}
-            {/*                />*/}
-            {/*                <div>*/}
-            {/*                    {suggestions && suggestions.map((suggestion, i) =>*/}
-            {/*                        <div*/}
-            {/*                            className="dishSuggestion"*/}
-            {/*                            style={{display: "block", marginLeft: "42px", width: "85%"}}*/}
-            {/*                            key={i}*/}
-            {/*                            onClick={() => onSuggestHandler(suggestion)}*/}
-            {/*                        >*/}
-            {/*                            {suggestion}*/}
-            {/*                        </div>*/}
-            {/*                    )}*/}
-            {/*                </div>*/}
-            {/*                <Form.Text className="text-muted">*/}
-            {/*                   На 100 г: (Ккал: {currentDish.calories}, Б:{currentDish.bilki}, Ж:{currentDish.fats}, В:{currentDish.vuhlevody} )*/}
-            {/*                </Form.Text>*/}
-            {/*            </InputGroup>*/}
-            {/*            <Form.Group className="mb-3 dateAndMealRow">*/}
-            {/*                <TimePicker className="dateAndMeal" onChange={setTime} value={time}/>*/}
-            {/*                <Form.Select className="dateAndMeal" value={mealType} onChange={handleSelectTypeChange}>*/}
-            {/*                    <option value="BREAKFAST">Сніданок</option>*/}
-            {/*                    <option value="DINNER">Обід</option>*/}
-            {/*                    <option value="SUPPER">Вечеря</option>*/}
-            {/*                    <option value="SNACK">Перекус</option>*/}
-            {/*                </Form.Select>*/}
-            {/*            </Form.Group>*/}
-            {/*            <InputGroup className="mb-3">*/}
-            {/*                <Form.Label>Маса:</Form.Label>*/}
-            {/*                <Form.Control*/}
-            {/*                    type="number"*/}
-            {/*                    placeholder="Введіть значення"*/}
-            {/*                    inputMode="numeric"*/}
-            {/*                    onChange={handleGramsChange}*/}
-            {/*                    value={grams}*/}
-            {/*                    min={0}*/}
-            {/*                    max={2000}*/}
-            {/*                    maxLength={4}*/}
-            {/*                    aria-describedby="gramsDescr"*/}
-            {/*                />*/}
-            {/*                <InputGroup.Text id="gramsDescr">г</InputGroup.Text>*/}
-
-            {/*            </InputGroup>*/}
-            {/*            <Form.Text className="text-muted">*/}
-            {/*                На {grams} г: (Ккал: {currentDish.calories/100*grams}, Б:{currentDish.bilki/100*grams}, Ж:{currentDish.fats/100*grams}, В:{currentDish.vuhlevody/100*grams} )*/}
-            {/*            </Form.Text>*/}
-            {/*        </Form>*/}
-            {/*    </Modal.Body>*/}
-            {/*    <Modal.Footer>*/}
-            {/*        <Button variant="secondary">*/}
-            {/*            Закрити*/}
-            {/*        </Button>*/}
-            {/*        <Button variant="primary" onClick={addMeal}>*/}
-            {/*             Додати*/}
-            {/*        </Button>*/}
-            {/*    </Modal.Footer>*/}
-            {/*</Modal>*/}
+            <SportModal onActivityAdded={handleActivityAdded} fetchActivities={fetchActivities} show = {sportModalShow} onHide={handleSportClose} selectedDate={selectedDate}/>
+            <MealModal onMealAdded={handleMealAdded} fetchMeals={fetchMeals}  show = {mealModalShow} onHide={handleMealClose} selectedDate={selectedDate}/>
         </div>
     );
 };

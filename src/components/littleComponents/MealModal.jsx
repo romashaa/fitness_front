@@ -7,7 +7,7 @@ import {faSearch} from "@fortawesome/free-solid-svg-icons";
 import TimePicker from "react-time-picker";
 import axios from "axios";
 
-const MealModal = ({show,onHide, selectedDate, setSelectedDate}) => {
+const MealModal = ({show,onHide, selectedDate, onMealAdded, fetchMeals}) => {
     const [dishOptions, setDishOptions] = useState([])
     const [suggestions, setSuggestions] = useState([])
     const [time, setTime] = useState('10:00');
@@ -52,7 +52,7 @@ const MealModal = ({show,onHide, selectedDate, setSelectedDate}) => {
         setSuggestions([]);
         setCurrentDish(dishOptions.find(dish=> dish.dishName===text))
     }
-    const addMeal = () => {
+    const addMeal = async () => {
         const mealData = {
             mealType:mealType,
             date:selectedDate,
@@ -60,20 +60,21 @@ const MealModal = ({show,onHide, selectedDate, setSelectedDate}) => {
             grams:grams,
             dishName:dishName
         };
-        fetch(`/api/auth/meals/addMeal/${currentUser}`,{
+        const response = await fetch(`/api/auth/meals/addMeal/${currentUser}`,{
             headers:{
                 "Content-type":"application/json"
             },
             method:"post",
             body:JSON.stringify(mealData)
-        })
-            .then((response) => {
-                console.log('New meal added');
-            })
-            .catch(error => {
-                console.error('Error adding new meal:', error);
-                // Handle the error
-            });
+        });
+        if(response.ok){
+            setTime("")
+            setDishName("")
+            setGrams("")
+            const updatedMealsResponse = await fetchMeals();
+            onMealAdded(updatedMealsResponse);
+            onHide()
+        }
         onHide()
     }
     return (
@@ -138,7 +139,7 @@ const MealModal = ({show,onHide, selectedDate, setSelectedDate}) => {
 
                         </InputGroup>
                         <Form.Text className="text-muted">
-                            На {grams} г: (Ккал: {currentDish.calories/100*grams}, Б:{currentDish.bilki/100*grams}, Ж:{currentDish.fats/100*grams}, В:{currentDish.vuhlevody/100*grams} )
+                            На {grams} г: (Ккал: {Math.round(currentDish.calories/100*grams)}, Б:{Math.round(currentDish.bilki/100*grams)}, Ж:{Math.round(currentDish.fats/100*grams)}, В:{Math.round(currentDish.vuhlevody/100*grams)} )
                         </Form.Text>
                     </Form>
                 </Modal.Body>

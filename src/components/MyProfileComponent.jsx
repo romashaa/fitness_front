@@ -8,7 +8,7 @@ import UserContext from "../context/UserContext";
 
 const MyProfileComponent = () => {
     const [age, setAge] = useState()
-    const [gender, setGender]=useState("FEMALE")
+    const [gender, setGender]=useState("")
     const [activityLevel, setActivityLevel]=useState("")
     const [height, setHeight] = useState()
     const [weight, setWeight]=useState()
@@ -244,7 +244,7 @@ const MyProfileComponent = () => {
                         <Card.Header><b>Ваша норма калорій на день</b></Card.Header>
                         <Card.Body>
                             <Card.Text>
-                                На добу вам рекомендовано вживати: {loaded ? caloriesNorm : 0} ккал
+                                На добу вам рекомендовано вживати: {loaded &&!isNaN(caloriesNorm) ? caloriesNorm : 0} ккал
                             </Card.Text>
                             <Button variant="primary" onClick={countNorm}>
                                 Розрахувати
