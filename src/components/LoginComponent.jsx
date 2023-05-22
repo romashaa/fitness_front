@@ -4,13 +4,17 @@ import {Form, FormText, InputGroup, Row} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import {useLocalState} from "../util/useLocalStorage";
 import jwt_decode from "jwt-decode";
-import UserContext from "../context/UserContext";
+import axios from "axios";
+import userStore from '../store/UserStore'
+import {inject, observer} from "mobx-react";
+import {Context} from "../index";
 
-const LoginComponent = () => {
+const LoginComponent  = observer(() => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [showErrorMessage, setShowErrorMessage] = useState(false)
     const navigate = useNavigate()
+    const {currentUserStore} = useContext(Context)
 
     function handleUsernameChange(event) {
         setUsername(event.target.value)
@@ -43,11 +47,18 @@ const LoginComponent = () => {
                  localStorage.setItem("jwt", JSON.stringify(authValue));
                  navigate(`/myProfile/${username}`)
                  localStorage.setItem('currentUser',  jwt_decode(authValue).sub);
-                 console.log(jwt_decode(authValue).sub)
+                // console.log(jwt_decode(authValue).sub)
             }).catch((message)=> {
                alert(message)
                console.log(message)
         });
+        axios.get(`myProfile/api/auth/userDto/${username}`)
+            .then(r =>{
+                const userFields = r.data;
+                currentUserStore.setCurrentUser(userFields);
+            })
+            .catch(err => console.log(err))
+        currentUserStore.setIsAuth(true)
     }
 
     return (
@@ -77,9 +88,8 @@ const LoginComponent = () => {
             {showErrorMessage &&
             <div className="errorMessage">Authentication failed. Please check your credentials.</div>}
         </div>
-
-
     );
-};
+});
+
 
 export default LoginComponent;

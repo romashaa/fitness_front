@@ -1,6 +1,16 @@
-label, input, button{
+input, button{
     margin: 10px;
     padding: 5px;
+}
+.label{
+    margin-top: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    font-size: 18px;
+    align-content: flex-start;
+    font-weight:bold;
+    color:darkslategrey;
+
 }
 
 footer{
@@ -13,18 +23,14 @@ footer{
     margin-top:5%;
     margin-bottom:5%;
 }
-nav{
-    position: fixed;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    background-color:indianred;
-    /*margin-bottom: 20px;*/
-}
-.navbar-nav{
-    margin-left: auto;
-    margin-right: 25px;
-}
+/*nav{*/
+/*    position: fixed;*/
+/*    z-index: 50;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    background-color:indianred;*/
+/*    !*margin-bottom: 20px;*!*/
+/*}*/
 .burger-btn{
     width: 30px;
     height: 20px;
@@ -40,7 +46,7 @@ card{
     margin-left: 15% ;
 }
 .menuListItem{
-    margin-left: 15%
+    margin-left: 13%
 }
 .menuItemBtn{
     border-radius: 50%;
@@ -56,6 +62,13 @@ card{
     margin-left:20px;
     /*float: right;*/
 }
+.popBtn{
+    /*width: 25px;*/
+    /*height: 25px;*/
+    background-color: lightcoral;
+    cursor: pointer;
+    margin-left: 10px;
+}
 .headerBrand{
     margin-left: 5%;
     font-weight: bold;
@@ -63,9 +76,14 @@ card{
 .headerMenuItem{
     margin-right: 20px;
     height: 40px;
+
 }
 .header{
     background-color: palevioletred;
+}
+.nav-link{
+    font-weight: bold;
+    font-size: 30px;
 }
 /*=======================My Profile=========================*/
 
@@ -151,9 +169,10 @@ card{
 }
 
 .right-panel {
-    margin-top: 50px;
+    margin-top: 40px;
     margin-left: auto;
-    max-width: 400px;
+    /*max-width: 400px;*/
+
 }
 @media screen and (max-width: 768px) {
     .panel-container {
@@ -169,4 +188,23 @@ card{
         margin-left: 0;
         margin-top: 30px;
     }
+}
+.gender-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.radio-options {
+    display: flex;
+    align-items: center;
+}
+
+.radio-options .form-check label{
+    margin-right: 5px;
+}
+
+.radio-label {
+    margin-bottom: 0;
+    margin-left: 5px;
 }

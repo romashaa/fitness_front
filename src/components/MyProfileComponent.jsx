@@ -1,12 +1,15 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {Accordion, Card, InputGroup, ListGroup, Modal, FormCheck, Form} from "react-bootstrap";
-import avatar from '../img/avatar.png'
+import avatar from '../img/girl.png'
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import UserContext from "../context/UserContext";
+import {Context} from "../index";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 
 const MyProfileComponent = () => {
+    const {currentUserStore} = useContext(Context)
     const [age, setAge] = useState()
     const [gender, setGender]=useState("")
     const [activityLevel, setActivityLevel]=useState("")
@@ -15,7 +18,8 @@ const MyProfileComponent = () => {
     const [show, setShow] = useState(false);
     const [caloriesNorm, setCaloriesNorm]=useState(0)
     const [loaded, setLoaded] = useState(false)
-    const {currentUser, setCurrentUser} = useContext(UserContext)
+    // const {currentUser, setCurrentUser} = useContext(UserContext)
+    const [currentUser, setCurrentUser] = useState('')
     const [userData, setUserData] = useState({});
 
     useEffect(() => {
@@ -27,13 +31,12 @@ const MyProfileComponent = () => {
         if(currentUser) {
              axios.get(`api/auth/user/${currentUser}`)
                 .then(response => {
-                    setUserData(response.data);
+                    setUserData(response.data)
                     setNorm()
                 }).catch(error => {
-                    console.log(error);
+                    console.log(error)
                 }).finally(()=>{
                  setLoaded(true)
-                 console.log("masha loh")
                 });
         }
         setLoaded(true)
@@ -51,6 +54,7 @@ const MyProfileComponent = () => {
         setAge(userData.age)
         setActivityLevel(userData.activityLevel)
         setShow(true);
+        console.log(currentUserStore.isAuth)
     }
 
     function handleGenderChange(event) {
@@ -86,7 +90,8 @@ const MyProfileComponent = () => {
             },
             method:"put",
             body:JSON.stringify(reqBody)
-        }).then(r => alert("updated"));
+        })
+            .then(r => console.log("updated"));
         setUserData({
             age: age,
             gender: gender,
@@ -212,7 +217,7 @@ const MyProfileComponent = () => {
             <div>
                 <div className="container">
                     {loaded ?
-                        <Card className="m-auto col-md-4">
+                        <Card className="m-auto col-md-4" style={{marginTop:'10px'}}>
                             <Card.Img className="m-auto" style={{width: "18rem"}} variant="top" src={avatar}/>
                             <Card.Body>
                                 <Card.Title>{currentUser}</Card.Title>
@@ -241,7 +246,9 @@ const MyProfileComponent = () => {
                         </Card> : <div>Dgdfxgdsfg...</div>
                     }
                     <Card bg='light' border='success' className='small-card' style={{position:"absolute", top:"10px", right:"5%"}}>
-                        <Card.Header><b>Ваша норма калорій на день</b></Card.Header>
+                        <Card.Header><b>Ваша норма калорій на день</b>
+                            <FontAwesomeIcon icon={faInfoCircle} style={{marginLeft:"10px"}} />
+                        </Card.Header>
                         <Card.Body>
                             <Card.Text>
                                 На добу вам рекомендовано вживати: {loaded &&!isNaN(caloriesNorm) ? caloriesNorm : 0} ккал

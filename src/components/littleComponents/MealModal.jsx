@@ -123,7 +123,7 @@ const MealModal = ({show,onHide, selectedDate, onMealAdded, fetchMeals}) => {
                             </Form.Select>
                         </Form.Group>
                         <InputGroup className="mb-3">
-                            <Form.Label>Маса:</Form.Label>
+                            <Form.Label style={{marginRight:'10px'}}>Маса:</Form.Label>
                             <Form.Control
                                 type="number"
                                 placeholder="Введіть значення"

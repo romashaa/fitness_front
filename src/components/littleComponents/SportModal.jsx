@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import axios from "axios";
 import {Form, Modal} from "react-bootstrap";
 import InputGroup from "react-bootstrap/InputGroup";
@@ -6,8 +6,11 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSearch} from "@fortawesome/free-solid-svg-icons";
 import TimePicker from "react-time-picker";
 import Button from "react-bootstrap/Button";
+import {Context} from "../../index";
 
-const SportModal = ({show,onHide, selectedDate, onActivityAdded, fetchActivities, userWeight}) => {
+const SportModal = ({show,onHide, selectedDate, onActivityAdded, fetchActivities}) => {
+    const {currentUserStore} = useContext(Context)
+
     const [sportOptions, setSportOptions] = useState([])
     const [sportName, setSportName] = useState("")
     const [suggestions, setSuggestions] = useState([])
@@ -15,6 +18,7 @@ const SportModal = ({show,onHide, selectedDate, onActivityAdded, fetchActivities
     const [currentSport, setCurrentSport] = useState({})
     const [durability, setDurability] = useState('');
     const currentUser = localStorage.getItem('currentUser')
+    const currentUserWeight = currentUserStore.currentUser.weight
 
     useEffect(() => {
         const loadActivities = async () => {
@@ -114,7 +118,7 @@ const SportModal = ({show,onHide, selectedDate, onActivityAdded, fetchActivities
                             <TimePicker className="dateAndMeal" onChange={setTime} value={time}/>
                         </Form.Group>
                         <InputGroup className="mb-3">
-                            <Form.Label>Тривалість:</Form.Label>
+                            <Form.Label style={{marginRight:'10px'}}>Тривалість:</Form.Label>
                             <Form.Control
                                 type="number"
                                 id="durability"
@@ -129,7 +133,7 @@ const SportModal = ({show,onHide, selectedDate, onActivityAdded, fetchActivities
 
                         </InputGroup>
                         <Form.Text className="text-muted">
-                            На {durability} хв: (Ккал: {currentSport.calories*(durability/30)*userWeight} )
+                            На {durability} хв: (Ккал: {Math.round(currentSport.calories*(durability/30)*currentUserWeight)} )
                         </Form.Text>
                     </Form>
                 </Modal.Body>
